@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -30,6 +32,24 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\Column]
     private ?string $password = null;
+
+    /**
+     * @var Collection<int, Task>
+     */
+    #[ORM\OneToMany(targetEntity: Task::class, mappedBy: 'createdBy')]
+    private Collection $tasksCreated;
+
+    /**
+     * @var Collection<int, Task>
+     */
+    #[ORM\OneToMany(targetEntity: Task::class, mappedBy: 'assignedTo')]
+    private Collection $tasksAssigned;
+
+    public function __construct()
+    {
+        $this->tasksCreated = new ArrayCollection();
+        $this->tasksAssigned = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -110,5 +130,65 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function eraseCredentials(): void
     {
         // @deprecated, to be removed when upgrading to Symfony 8
+    }
+
+    /**
+     * @return Collection<int, Task>
+     */
+    public function getTasksCreated(): Collection
+    {
+        return $this->tasksCreated;
+    }
+
+    public function addTasksCreated(Task $tasksCreated): static
+    {
+        if (!$this->tasksCreated->contains($tasksCreated)) {
+            $this->tasksCreated->add($tasksCreated);
+            $tasksCreated->setCreatedBy($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTasksCreated(Task $tasksCreated): static
+    {
+        if ($this->tasksCreated->removeElement($tasksCreated)) {
+            // set the owning side to null (unless already changed)
+            if ($tasksCreated->getCreatedBy() === $this) {
+                $tasksCreated->setCreatedBy(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Task>
+     */
+    public function getTasksAssigned(): Collection
+    {
+        return $this->tasksAssigned;
+    }
+
+    public function addTasksAssigned(Task $tasksAssigned): static
+    {
+        if (!$this->tasksAssigned->contains($tasksAssigned)) {
+            $this->tasksAssigned->add($tasksAssigned);
+            $tasksAssigned->setAssignedTo($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTasksAssigned(Task $tasksAssigned): static
+    {
+        if ($this->tasksAssigned->removeElement($tasksAssigned)) {
+            // set the owning side to null (unless already changed)
+            if ($tasksAssigned->getAssignedTo() === $this) {
+                $tasksAssigned->setAssignedTo(null);
+            }
+        }
+
+        return $this;
     }
 }
