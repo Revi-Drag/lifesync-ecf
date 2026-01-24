@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LifeSync — Tâches</title>
+    <link rel="stylesheet" href="./app.css" />
+</head>
+
+<body>
+    <main class="container">
+        <header class="row space-between">
+            <div>
+                <h1>Tâches</h1>
+                <p id="me" class="muted">...</p>
+            </div>
+            <div class="row">
+                <a class="btn secondary" href="./login.html">Connexion</a>
+            </div>
+        </header>
+
+        <section class="card">
+            <h2>Créer une tâche</h2>
+            <form id="createForm" class="grid">
+                <label>
+                    Titre
+                    <input name="title" required minlength="2" />
+                </label>
+
+                <label>
+                    Description
+                    <input name="description" />
+                </label>
+
+                <label>
+                    Difficulté (1–5)
+                    <input name="difficulty" type="number" min="1" max="5" value="3" required />
+                </label>
+
+                <label>
+                    Durée (minutes)
+                    <input name="durationMinutes" type="number" min="1" max="1440" value="45" required />
+                </label>
+
+                <button type="submit">Ajouter</button>
+                <p id="createMsg" class="msg"></p>
+            </form>
+        </section>
+
+        <section class="card">
+            <h2>Liste</h2>
+            <button id="refreshBtn" class="btn secondary">Rafraîchir</button>
+            <div id="tasks"></div>
+            <p id="listMsg" class="msg"></p>
+        </section>
+    </main>
+
+    <script src="./tasks.js"></script>
+</body>
+
+</html>

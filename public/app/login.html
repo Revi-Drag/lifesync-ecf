@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LifeSync — Connexion</title>
+    <link rel="stylesheet" href="./app.css" />
+</head>
+
+<body>
+    <main class="container">
+        <h1>LifeSync</h1>
+        <p class="muted">Connexion (API Symfony)</p>
+
+        <form id="loginForm" class="card">
+            <label>
+                Email
+                <input type="email" name="email" required value="admin@lifesync.local" />
+            </label>
+
+            <label>
+                Mot de passe
+                <input type="password" name="password" required value="Admin123!" />
+            </label>
+
+            <button type="submit">Se connecter</button>
+            <p id="loginMsg" class="msg"></p>
+        </form>
+
+        <p class="muted small">
+            Astuce : si tu veux tester en user, remplace par <code>user@lifesync.local</code> / <code>User123!</code>.
+        </p>
+    </main>
+
+    <script src="./login.js"></script>
+</body>
+
+</html>
