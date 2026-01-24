@@ -24,13 +24,13 @@ class Task
     private ?int $difficulty = null;
 
     #[ORM\Column]
-    private ?int $durationMINUTES = null;
+    private ?int $durationMinutes = null;
 
     #[ORM\Column(length: 20)]
     private ?string $status = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAT = null;
+    private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'tasksCreated')]
     #[ORM\JoinColumn(nullable: false)]
@@ -39,8 +39,6 @@ class Task
     #[ORM\ManyToOne(inversedBy: 'tasksAssigned')]
     private ?User $assignedTo = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $no = null;
 
     public function getId(): ?int
     {
@@ -83,14 +81,14 @@ class Task
         return $this;
     }
 
-    public function getDurationMINUTES(): ?int
+    public function getDurationMinutes(): ?int
     {
-        return $this->durationMINUTES;
+        return $this->durationMinutes;
     }
 
-    public function setDurationMINUTES(int $durationMINUTES): static
+    public function setDurationMinutes(int $durationMinutes): static
     {
-        $this->durationMINUTES = $durationMINUTES;
+        $this->durationMinutes = $durationMinutes;
 
         return $this;
     }
@@ -107,14 +105,14 @@ class Task
         return $this;
     }
 
-    public function getCreatedAT(): ?\DateTimeImmutable
+    public function getCreatedAt(): ?\DateTimeImmutable
     {
-        return $this->createdAT;
+        return $this->createdAt;
     }
 
-    public function setCreatedAT(\DateTimeImmutable $createdAT): static
+    public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
-        $this->createdAT = $createdAT;
+        $this->createdAt = $createdAt;
 
         return $this;
     }
@@ -143,15 +141,4 @@ class Task
         return $this;
     }
 
-    public function getNo(): ?string
-    {
-        return $this->no;
-    }
-
-    public function setNo(string $no): static
-    {
-        $this->no = $no;
-
-        return $this;
-    }
 }
