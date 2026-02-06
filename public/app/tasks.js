@@ -26,7 +26,7 @@ function renderTasks(tasks) {
         return `
       <div class="task">
         <div class="task-main">
-          <div class="task-title">${escapeHtml(t.title)} <span class="badge">${t.status}</span></div>
+          <div class="task-title">${escapeHtml(t.title)} <span class="badge badge-${t.status.toLowerCase()}">${t.status}</span></div>
           <div class="task-meta muted">
             Diff: ${t.difficulty} — Durée: ${t.durationMinutes} min — Créée: ${t.createdAt ? new Date(t.createdAt).toLocaleString() : "-"}
           </div>
