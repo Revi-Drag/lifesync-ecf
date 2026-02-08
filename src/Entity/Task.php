@@ -39,6 +39,12 @@ class Task
     #[ORM\ManyToOne(inversedBy: 'tasksAssigned')]
     private ?User $assignedTo = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $doneAt = null;
+
+    #[ORM\ManyToOne]
+    private ?User $doneBy = null;
+
 
     public function getId(): ?int
     {
@@ -137,6 +143,30 @@ class Task
     public function setAssignedTo(?User $assignedTo): static
     {
         $this->assignedTo = $assignedTo;
+
+        return $this;
+    }
+
+    public function getDoneAt(): ?\DateTimeImmutable
+    {
+        return $this->doneAt;
+    }
+
+    public function setDoneAt(?\DateTimeImmutable $doneAt): static
+    {
+        $this->doneAt = $doneAt;
+
+        return $this;
+    }
+
+    public function getDoneBy(): ?User
+    {
+        return $this->doneBy;
+    }
+
+    public function setDoneBy(?User $doneBy): static
+    {
+        $this->doneBy = $doneBy;
 
         return $this;
     }
