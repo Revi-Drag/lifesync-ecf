@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
+use App\Repository\UserRepository;
 use App\Entity\Task;
 use App\Repository\TaskRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -86,8 +88,14 @@ class ApiTaskController extends AbstractController
     }
 
     #[Route('/{id}', name: 'api_tasks_update', methods: ['PATCH'])]
-    public function update(int $id, Request $request, TaskRepository $taskRepository, EntityManagerInterface $em): JsonResponse
-    {
+    public function update(
+        int $id,
+        Request $request,
+        TaskRepository $taskRepository,
+        UserRepository $userRepository,
+        EntityManagerInterface $em
+    ): JsonResponse {
+        /** @var User|null $user */
         $user = $this->getUser();
         if (!$user) {
             return $this->json(['success' => false, 'error' => 'Not authenticated'], 401);
@@ -98,8 +106,11 @@ class ApiTaskController extends AbstractController
             return $this->json(['success' => false, 'error' => 'Task not found'], 404);
         }
 
-        // Ownership check
-        if ($task->getCreatedBy()?->getUserIdentifier() !== $user->getUserIdentifier()) {
+        $isAdmin = in_array('ROLE_ADMIN', $user->getRoles(), true);
+        $isCreator = $task->getCreatedBy()?->getUserIdentifier() === $user->getUserIdentifier();
+
+        // Règle CDC : seul créateur OU admin peut modifier une tâche
+        if (!$isAdmin && !$isCreator) {
             return $this->json(['success' => false, 'error' => 'Forbidden'], 403);
         }
 
@@ -110,18 +121,89 @@ class ApiTaskController extends AbstractController
 
         $allowedStatuses = ['TODO', 'IN_PROGRESS', 'DONE'];
 
+        // --- STATUS + START/DONE LOGIC ---
         if (array_key_exists('status', $payload)) {
-            $status = (string) $payload['status'];
-            if (!in_array($status, $allowedStatuses, true)) {
+            $newStatus = (string) $payload['status'];
+
+            if (!in_array($newStatus, $allowedStatuses, true)) {
                 return $this->json([
                     'success' => false,
                     'errors' => ['status' => 'Status must be one of TODO, IN_PROGRESS, DONE.']
                 ], 422);
             }
-            $task->setStatus($status);
+
+            $task->setStatus($newStatus);
+
+            // Si passage à IN_PROGRESS : startedAt/startedBy (une seule fois)
+            if ($newStatus === 'IN_PROGRESS') {
+                if ($task->getStartedAt() === null) {
+                    $task->setStartedAt(new \DateTimeImmutable());
+                }
+                if ($task->getStartedBy() === null) {
+                    $task->setStartedBy($user);
+                }
+            }
+
+            // Si passage à DONE : sécurise started* puis done*
+            if ($newStatus === 'DONE') {
+                if ($task->getStartedAt() === null) {
+                    $task->setStartedAt(new \DateTimeImmutable());
+                }
+                if ($task->getStartedBy() === null) {
+                    $task->setStartedBy($user);
+                }
+                if ($task->getDoneAt() === null) {
+                    $task->setDoneAt(new \DateTimeImmutable());
+                }
+                if ($task->getDoneBy() === null) {
+                    $task->setDoneBy($user);
+                }
+            }
+
+            // Si retour à TODO : on ne touche pas (historique conservé)
+
         }
 
-        // Optionnel: autoriser modifications basiques
+        // --- doneBy override (optionnel) ---
+        // Règle CDC : on peut corriger "fait par" uniquement par le créateur OU admin.
+        // Note : même si le status n’est pas DONE, on refuse de modifier doneBy (cohérence).
+        if (array_key_exists('doneById', $payload)) {
+            if ($task->getStatus() !== 'DONE') {
+                return $this->json([
+                    'success' => false,
+                    'errors' => ['doneById' => 'doneBy can only be set when status is DONE.']
+                ], 422);
+            }
+
+            if (!$isAdmin && !$isCreator) {
+                return $this->json(['success' => false, 'error' => 'Forbidden'], 403);
+            }
+
+            $doneById = $payload['doneById'];
+            if (!is_int($doneById) || $doneById < 1) {
+                return $this->json([
+                    'success' => false,
+                    'errors' => ['doneById' => 'doneById must be a positive integer.']
+                ], 422);
+            }
+
+            $doneBy = $userRepository->find($doneById);
+            if (!$doneBy) {
+                return $this->json([
+                    'success' => false,
+                    'errors' => ['doneById' => 'User not found.']
+                ], 404);
+            }
+
+            $task->setDoneBy($doneBy);
+
+            // Si DONE et doneAt pas set (cas d’une correction manuelle), on sécurise
+            if ($task->getDoneAt() === null) {
+                $task->setDoneAt(new \DateTimeImmutable());
+            }
+        }
+
+        // --- Modifs basiques existantes ---
         if (array_key_exists('title', $payload)) {
             $title = trim((string) $payload['title']);
             if ($title === '' || mb_strlen($title) < 2) {
@@ -154,6 +236,7 @@ class ApiTaskController extends AbstractController
 
         return $this->json(['success' => true, 'task' => $this->serializeTask($task)], 200);
     }
+
 
     #[Route('/{id}', name: 'api_tasks_delete', methods: ['DELETE'])]
     public function delete(int $id, TaskRepository $taskRepository, EntityManagerInterface $em): JsonResponse
@@ -200,6 +283,11 @@ class ApiTaskController extends AbstractController
             'status' => $task->getStatus(),
             'createdAt' => $task->getCreatedAt()?->format(\DateTimeInterface::ATOM),
             'createdBy' => $task->getCreatedBy()?->getUserIdentifier(),
+
+            'startedAt' => $task->getStartedAt()?->format(\DateTimeInterface::ATOM),
+            'startedBy' => $task->getStartedBy()?->getUserIdentifier(),
+            'doneAt' => $task->getDoneAt()?->format(\DateTimeInterface::ATOM),
+            'doneBy' => $task->getDoneBy()?->getUserIdentifier(),
         ];
     }
 }

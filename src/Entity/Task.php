@@ -40,6 +40,13 @@ class Task
     private ?User $assignedTo = null;
 
     #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $startedAt = null;
+
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?User $startedBy = null;
+
+    #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $doneAt = null;
 
     #[ORM\ManyToOne]
@@ -143,6 +150,29 @@ class Task
     public function setAssignedTo(?User $assignedTo): static
     {
         $this->assignedTo = $assignedTo;
+
+        return $this;
+    }
+    public function getStartedAt(): ?\DateTimeImmutable
+    {
+        return $this->startedAt;
+    }
+
+    public function setStartedAt(?\DateTimeImmutable $startedAt): static
+    {
+        $this->startedAt = $startedAt;
+
+        return $this;
+    }
+
+    public function getStartedBy(): ?User
+    {
+        return $this->startedBy;
+    }
+
+    public function setStartedBy(?User $startedBy): static
+    {
+        $this->startedBy = $startedBy;
 
         return $this;
     }
