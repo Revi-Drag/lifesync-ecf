@@ -18,20 +18,26 @@ class ApiTaskController extends AbstractController
     #[Route('', name: 'api_tasks_index', methods: ['GET'])]
     public function index(TaskRepository $taskRepository): JsonResponse
     {
+        /** @var User|null $user */
         $user = $this->getUser();
         if (!$user) {
             return $this->json(['success' => false, 'error' => 'Not authenticated'], 401);
         }
 
-        $tasks = $taskRepository->findBy(
-            ['createdBy' => $user],
-            ['createdAt' => 'DESC']
-        );
+        $isAdmin = in_array('ROLE_ADMIN', $user->getRoles(), true);
+
+        $qb = $taskRepository->createQueryBuilder('t')
+            ->orderBy('t.createdAt', 'DESC');
+
+        // règle : admin voit tout, user voit tout 
+
+        $tasks = $qb->getQuery()->getResult();
 
         $data = array_map([$this, 'serializeTask'], $tasks);
 
         return $this->json(['success' => true, 'tasks' => $data], 200);
     }
+
 
     #[Route('', name: 'api_tasks_create', methods: ['POST'])]
     public function create(Request $request, EntityManagerInterface $em): JsonResponse
@@ -87,6 +93,8 @@ class ApiTaskController extends AbstractController
         return $this->json(['success' => true, 'task' => $this->serializeTask($task)], 201);
     }
 
+
+
     #[Route('/{id}', name: 'api_tasks_update', methods: ['PATCH'])]
     public function update(
         int $id,
@@ -109,17 +117,36 @@ class ApiTaskController extends AbstractController
         $isAdmin = in_array('ROLE_ADMIN', $user->getRoles(), true);
         $isCreator = $task->getCreatedBy()?->getUserIdentifier() === $user->getUserIdentifier();
 
-        // Règle CDC : seul créateur OU admin peut modifier une tâche
-        if (!$isAdmin && !$isCreator) {
-            return $this->json(['success' => false, 'error' => 'Forbidden'], 403);
-        }
-
         $payload = $this->getJson($request);
         if ($payload === null) {
             return $this->json(['success' => false, 'error' => 'Invalid JSON'], 400);
         }
 
+
+
+        // --- Règle CDC ---
+// Tout le monde peut changer le status
+// Mais seul admin ou créateur peut modifier title/description/difficulty/duration
+
+        $editKeys = ['title', 'description', 'difficulty', 'durationMinutes'];
+        $wantsEdit = false;
+
+        foreach ($editKeys as $k) {
+            if (array_key_exists($k, $payload)) {
+                $wantsEdit = true;
+                break;
+            }
+        }
+
+        if ($wantsEdit && !$isAdmin && !$isCreator) {
+            return $this->json(['success' => false, 'error' => 'Forbidden'], 403);
+        }
+
+
         $allowedStatuses = ['TODO', 'IN_PROGRESS', 'DONE'];
+
+
+
 
         // --- STATUS + START/DONE LOGIC ---
         if (array_key_exists('status', $payload)) {
@@ -134,6 +161,7 @@ class ApiTaskController extends AbstractController
 
             $task->setStatus($newStatus);
 
+
             // Si passage à IN_PROGRESS : startedAt/startedBy (une seule fois)
             if ($newStatus === 'IN_PROGRESS') {
                 if ($task->getStartedAt() === null) {
@@ -143,6 +171,7 @@ class ApiTaskController extends AbstractController
                     $task->setStartedBy($user);
                 }
             }
+
 
             // Si passage à DONE : sécurise started* puis done*
             if ($newStatus === 'DONE') {
@@ -160,9 +189,11 @@ class ApiTaskController extends AbstractController
                 }
             }
 
+
             // Si retour à TODO : on ne touche pas (historique conservé)
 
         }
+
 
         // --- doneBy override (optionnel) ---
         // Règle CDC : on peut corriger "fait par" uniquement par le créateur OU admin.
@@ -197,11 +228,13 @@ class ApiTaskController extends AbstractController
 
             $task->setDoneBy($doneBy);
 
+
             // Si DONE et doneAt pas set (cas d’une correction manuelle), on sécurise
             if ($task->getDoneAt() === null) {
                 $task->setDoneAt(new \DateTimeImmutable());
             }
         }
+
 
         // --- Modifs basiques existantes ---
         if (array_key_exists('title', $payload)) {
@@ -251,8 +284,10 @@ class ApiTaskController extends AbstractController
             return $this->json(['success' => false, 'error' => 'Task not found'], 404);
         }
 
-        // Ownership check
-        if ($task->getCreatedBy()?->getUserIdentifier() !== $user->getUserIdentifier()) {
+        $isAdmin = in_array('ROLE_ADMIN', $user->getRoles(), true);
+        $isCreator = $task->getCreatedBy()?->getUserIdentifier() === $user->getUserIdentifier();
+
+        if (!$isAdmin && !$isCreator) {
             return $this->json(['success' => false, 'error' => 'Forbidden'], 403);
         }
 
