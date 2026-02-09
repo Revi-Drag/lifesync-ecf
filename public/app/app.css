@@ -186,11 +186,25 @@ button:active,
 }
 
 .badge-inprogress {
-    background: #f8df99;
-    color: #ebbd25;
+    background: #f3fedb;
+    color: #2563eb;
 }
 
 .badge-done {
     background: #d1fae5;
     color: #15803d;
+}
+
+/* ✅ Task History (started/done info) */
+.task-history {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    font-size: 0.85rem;
+}
+
+.task-userline strong {
+    color: #444;
+    font-weight: 600;
 }

@@ -6,15 +6,32 @@ const refreshBtn = document.getElementById("refreshBtn");
 const createForm = document.getElementById("createForm");
 const createMsg = document.getElementById("createMsg");
 
+
+function formatDate(iso) {
+    if (!iso) return "-";
+    return new Date(iso).toLocaleString();
+}
+
+function renderUserLine(label, user, date) {
+    if (!user && !date) return "";
+    return `
+      <div class="task-userline muted">
+        <strong>${label}</strong>
+        ${user ?? "-"}
+        ${date ? `— ${formatDate(date)}` : ""}
+      </div>
+    `;
+}
+
 async function api(path, options = {}) {
     const res = await fetch(path, {
-        credentials: "include", // IMPORTANT: session
+        credentials: "include",
         ...options,
     });
-
     const data = await res.json().catch(() => null);
     return { res, data };
 }
+
 
 function renderTasks(tasks) {
     if (!tasks.length) {
@@ -23,15 +40,44 @@ function renderTasks(tasks) {
     }
 
     const rows = tasks.map(t => {
+
+        // lignes started/done
+        const startedLine = renderUserLine(
+            "Commencé par :",
+            t.startedBy,
+            t.startedAt
+        );
+
+        const doneLine = renderUserLine(
+            "Fait par :",
+            t.doneBy,
+            t.doneAt
+        );
+
         return `
       <div class="task">
         <div class="task-main">
-          <div class="task-title">${escapeHtml(t.title)} <span class="badge badge-${t.status.toLowerCase()}">${t.status}</span></div>
-          <div class="task-meta muted">
-            Diff: ${t.difficulty} — Durée: ${t.durationMinutes} min — Créée: ${t.createdAt ? new Date(t.createdAt).toLocaleString() : "-"}
+          <div class="task-title">
+            ${escapeHtml(t.title)}
+            <span class="badge badge-${t.status.toLowerCase().replace("_", "")}">${t.status}</span>
           </div>
+
+          <div class="task-meta muted">
+            Diff: ${t.difficulty}
+            — Durée: ${t.durationMinutes} min
+            — Créée: ${t.createdAt ? new Date(t.createdAt).toLocaleString() : "-"}
+          </div>
+
           ${t.description ? `<div class="task-desc">${escapeHtml(t.description)}</div>` : ""}
+
+          <!--  Ajout started/done -->
+          <div class="task-history">
+            ${startedLine}
+            ${doneLine}
+          </div>
+
         </div>
+
         <div class="task-actions">
           <button data-action="todo" data-id="${t.id}" class="btn secondary">TODO</button>
           <button data-action="progress" data-id="${t.id}" class="btn secondary">IN_PROGRESS</button>
@@ -45,6 +91,7 @@ function renderTasks(tasks) {
     tasksEl.innerHTML = rows.join("");
 }
 
+
 function escapeHtml(s) {
     return String(s)
         .replaceAll("&", "&amp;")
@@ -53,6 +100,7 @@ function escapeHtml(s) {
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
 }
+
 
 async function loadMe() {
     const { res, data } = await api("/api/me");
@@ -70,6 +118,7 @@ async function loadMe() {
     meEl.textContent = `Connecté : ${data.user.email} (${data.user.roles.join(", ")})`;
     return true;
 }
+
 
 async function loadTasks() {
     listMsg.textContent = "";
@@ -91,6 +140,7 @@ async function loadTasks() {
 
     renderTasks(data.tasks || []);
 }
+
 
 createForm.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -128,6 +178,7 @@ createForm.addEventListener("submit", async (e) => {
 
     await loadTasks();
 });
+
 
 tasksEl.addEventListener("click", async (e) => {
     const btn = e.target.closest("button[data-action]");
