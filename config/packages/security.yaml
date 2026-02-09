@@ -1,6 +1,7 @@
 security:
     # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
     password_hashers:
+        App\Entity\User: 'auto'
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
 
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
@@ -16,6 +17,24 @@ security:
             # Ensure dev tools and static assets are always allowed
             pattern: ^/(_profiler|_wdt|assets|build)/
             security: false
+
+        api:
+            pattern:   ^/api
+            provider: app_user_provider
+            
+            
+            json_login:
+                check_path:               /api/login
+                username_path:            email
+                password_path:            password
+                # success_handler: App\Security\ApiLoginSuccessHandler
+                success_handler:          App\Security\ApiLoginSuccessHandler
+                # failure_handler: App\Security\ApiLoginFailureHandler
+                failure_handler:          App\Security\ApiLoginFailureHandler
+
+            logout:
+                path: /api/logout 
+                
         main:
             lazy: true
             provider: app_user_provider
@@ -28,6 +47,8 @@ security:
 
     # Note: Only the *first* matching rule is applied
     access_control:
+        - { path: ^/api/login, roles: PUBLIC_ACCESS }
+        - { path: ^/api, roles: PUBLIC_ACCESS }
         # - { path: ^/admin, roles: ROLE_ADMIN }
         # - { path: ^/profile, roles: ROLE_USER }
 

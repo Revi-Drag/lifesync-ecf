@@ -128,14 +128,26 @@ class ApiTaskController extends AbstractController
 // Tout le monde peut changer le status
 // Mais seul admin ou créateur peut modifier title/description/difficulty/duration
 
-        $editKeys = ['title', 'description', 'difficulty', 'durationMinutes'];
+        $editKeys = ['title', 'description', 'difficulty', 'durationMinutes', 'doneById'];
         $wantsEdit = false;
+
+        $wantsStatus = array_key_exists('status', $payload);
+
+        if (!$wantsEdit && !$wantsStatus) {
+            return $this->json(['success' => false, 'error' => 'No updatable fields provided'], 400);
+        }
 
         foreach ($editKeys as $k) {
             if (array_key_exists($k, $payload)) {
                 $wantsEdit = true;
                 break;
             }
+        }
+
+        $wantsStatus = array_key_exists('status', $payload);
+
+        if (!$wantsEdit && !$wantsStatus) {
+            return $this->json(['success' => false, 'error' => 'No updatable fields provided'], 400);
         }
 
         if ($wantsEdit && !$isAdmin && !$isCreator) {
