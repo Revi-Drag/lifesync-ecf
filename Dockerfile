@@ -41,3 +41,5 @@ RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 
 EXPOSE 8080
+
+CMD ["/usr/bin/supervisord","-c","/etc/supervisord.conf"]
