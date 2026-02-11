@@ -1,4 +1,4 @@
-FROM php:8.3-fpm-alpine
+FROM php:8.4-fpm-alpine
 
 # deps system
 RUN apk add --no-cache \
@@ -41,5 +41,3 @@ RUN chmod +x /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 
 EXPOSE 8080
-
-CMD ["/usr/bin/supervisord","-c","/etc/supervisord.conf"]
