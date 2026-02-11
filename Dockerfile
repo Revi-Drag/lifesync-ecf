@@ -27,7 +27,7 @@ ENV APP_ENV=prod
 ENV APP_DEBUG=0
 
 # install vendors
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+RUN APP_ENV=prod APP_DEBUG=0 composer install --no-dev --optimize-autoloader --no-interaction
 
 # nginx conf
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf
