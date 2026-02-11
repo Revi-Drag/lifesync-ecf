@@ -15,6 +15,9 @@ RUN apk add --no-cache \
 # php extensions
 RUN docker-php-ext-install intl opcache pdo pdo_pgsql zip
 
+# PHP logs -> Render stdout/stderr
+COPY docker/php.ini /usr/local/etc/php/conf.d/zz-render.ini
+
 # composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
