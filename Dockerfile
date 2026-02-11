@@ -23,6 +23,9 @@ WORKDIR /var/www/html
 # copy app
 COPY . .
 
+ENV APP_ENV=prod
+ENV APP_DEBUG=0
+
 # install vendors
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
