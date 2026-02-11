@@ -1,6 +1,8 @@
 #!/usr/bin/env sh
 set -e
 
+echo "=========ENTRYPOINT START========="
+
 echo "[entrypoint] APP_ENV=$APP_ENV APP_DEBUG=$APP_DEBUG"
 
 # Affiche DATABASE_URL sans le password
