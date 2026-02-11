@@ -35,6 +35,11 @@ COPY docker/supervisord.conf /etc/supervisord.conf
 # permissions
 RUN mkdir -p var && chown -R www-data:www-data var
 
+# entrypoint (migrations on startup)
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]
+
 EXPOSE 8080
 
 CMD ["/usr/bin/supervisord","-c","/etc/supervisord.conf"]
