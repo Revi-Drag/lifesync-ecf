@@ -9,34 +9,33 @@ RUN apk add --no-cache \
     libzip-dev \
     oniguruma-dev \
     postgresql-dev \
-    nginx \
-    supervisor
+    nginx
 
 # php extensions
 RUN docker-php-ext-install intl opcache pdo pdo_pgsql zip
-
-# PHP logs -> Render stdout/stderr
-COPY docker/php.ini /usr/local/etc/php/conf.d/zz-render.ini
-
-# composer
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
 # copy app
 COPY . .
 
+# PHP/FPM logs -> Render stdout/stderr
+COPY docker/php.ini /usr/local/etc/php/conf.d/zz-render.ini
+COPY docker/fpm.conf /usr/local/etc/php-fpm.d/zz-render.conf
+
 ENV APP_ENV=prod
 ENV APP_DEBUG=0
 
+# composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
 # install vendors
-RUN APP_ENV=prod APP_DEBUG=0 composer install --no-dev --optimize-autoloader --no-interaction
+RUN composer install --no-dev --optimize-autoloader --no-interaction
 
 # nginx conf
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf
 
-# supervisor conf
-COPY docker/supervisord.conf /etc/supervisord.conf
+RUN mkdir -p /run/nginx && chown -R nginx:nginx /run/nginx
 
 # permissions
 RUN mkdir -p var && chown -R www-data:www-data var
@@ -44,8 +43,7 @@ RUN mkdir -p var && chown -R www-data:www-data var
 # entrypoint (migrations on startup)
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
-ENTRYPOINT ["/entrypoint.sh"]
 
 EXPOSE 8080
 
-CMD ["/usr/bin/supervisord","-c","/etc/supervisord.conf"]
+ENTRYPOINT ["/entrypoint.sh"]
