@@ -12,7 +12,10 @@ RUN apk add --no-cache \
     nginx
 
 # php extensions
-RUN docker-php-ext-install intl opcache pdo pdo_pgsql zip
+RUN docker-php-ext-install intl opcache pdo pdo_pgsql pgsql zip
+
+# verify pgsql driver is installed
+RUN php -m | grep pgsql
 
 WORKDIR /var/www/html
 
