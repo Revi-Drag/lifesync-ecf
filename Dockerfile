@@ -21,7 +21,6 @@ COPY . .
 
 # PHP/FPM logs -> Render stdout/stderr
 COPY docker/php.ini /usr/local/etc/php/conf.d/zz-render.ini
-COPY docker/fpm.conf /usr/local/etc/php-fpm.d/zz-render.conf
 
 ENV APP_ENV=prod
 ENV APP_DEBUG=0
