@@ -7,6 +7,7 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: TaskRepository::class)]
+#[ORM\Table(name: 'task')]
 class Task
 {
     #[ORM\Id]
@@ -52,6 +53,8 @@ class Task
     #[ORM\ManyToOne]
     private ?User $doneBy = null;
 
+    #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
+    private ?User $doneByUser = null;
 
     public function getId(): ?int
     {
