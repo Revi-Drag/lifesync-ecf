@@ -9,13 +9,14 @@ RUN apk add --no-cache \
     libzip-dev \
     oniguruma-dev \
     postgresql-dev \
+    libpq \
     nginx
 
 # php extensions
-RUN docker-php-ext-install intl opcache pdo pdo_pgsql pgsql zip
+RUN docker-php-ext-install intl opcache pdo pdo_pgsql zip
 
-# verify pgsql driver is installed
-RUN php -m | grep pgsql
+# verify PostgreSQL drivers are installed (PDO + pgsql)
+RUN php -m | grep -E 'pdo_pgsql|pgsql' || (php -m && exit 1)
 
 WORKDIR /var/www/html
 
