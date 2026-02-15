@@ -7,13 +7,13 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Symfony\Component\Security\Http\Authentication\AuthenticationFailureHandlerInterface;
 
-class ApiLoginFailureHandler implements AuthenticationFailureHandlerInterface
+final class ApiLoginFailureHandler implements AuthenticationFailureHandlerInterface
 {
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): JsonResponse
     {
         return new JsonResponse([
             'success' => false,
-            'error' => 'Invalid credentials',
+            'error' => 'Bad credentials',
         ], 401);
     }
 }

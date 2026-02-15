@@ -1,0 +1,49 @@
+warning: in the working copy of '.gitignore', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'config/packages/doctrine.yaml', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'config/reference.php', LF will be replaced by CRLF the next time Git touches it
+[1mdiff --git a/.gitignore b/.gitignore[m
+[1mindex a67f91e..a7bf783 100644[m
+[1m--- a/.gitignore[m
+[1m+++ b/.gitignore[m
+[36m@@ -7,4 +7,17 @@[m
+ /public/bundles/[m
+ /var/[m
+ /vendor/[m
+[32m+[m[32m# Debug local files[m
+[32m+[m[32m*.txt[m
+[32m+[m[32m*.json[m
+[32m+[m
+[32m+[m[32m# Logs[m
+[32m+[m[32m*.log[m
+[32m+[m
+[32m+[m[32m# Temporary debug dumps[m
+[32m+[m[32mdebug_*[m
+[32m+[m[32mlogin_*[m
+[32m+[m[32mme_*[m
+[32m+[m[32mcurl_*[m
+[32m+[m[32mbody.json[m
+ ###< symfony/framework-bundle ###[m
+[1mdiff --git a/config/packages/doctrine.yaml b/config/packages/doctrine.yaml[m
+[1mindex 6c57caf..209a497 100644[m
+[1m--- a/config/packages/doctrine.yaml[m
+[1m+++ b/config/packages/doctrine.yaml[m
+[36m@@ -1,6 +1,7 @@[m
+ doctrine:[m
+     dbal:[m
+         url: '%env(resolve:DATABASE_URL)%'[m
+[32m+[m[32m        driver: 'pdo_pgsql'[m
+ [m
+         # IMPORTANT: You MUST configure your server version,[m
+         # either here or in the DATABASE_URL env var (see .env file)[m
+[1mdiff --git a/config/reference.php b/config/reference.php[m
+[1mindex a3fb331..5d70810 100644[m
+[1m--- a/config/reference.php[m
+[1m+++ b/config/reference.php[m
+[36m@@ -1248,6 +1248,7 @@[m [muse Symfony\Component\Config\Loader\ParamConfigurator as Param;[m
+  *         framework?: FrameworkConfig,[m
+  *         doctrine?: DoctrineConfig,[m
+  *         doctrine_migrations?: DoctrineMigrationsConfig,[m
+[32m+[m[32m *         maker?: MakerConfig,[m
+  *         security?: SecurityConfig,[m
+  *     },[m
+  *     ...<string, ExtensionType|array{ // extra keys must follow the when@%env% pattern or match an extension alias[m
