@@ -7,4 +7,17 @@
 /public/bundles/
 /var/
 /vendor/
+# Debug local files
+*.txt
+*.json
+
+# Logs
+*.log
+
+# Temporary debug dumps
+debug_*
+login_*
+me_*
+curl_*
+body.json
 ###< symfony/framework-bundle ###
