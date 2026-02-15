@@ -18,7 +18,7 @@ final class AdminSeedUserController
         UserPasswordHasherInterface $hasher
     ): JsonResponse {
         $token = $request->headers->get('X-SEED-TOKEN');
-        $expected = $_ENV['SEED_TOKEN'] ?? null;
+        $expected = $_SERVER['SEED_TOKEN'] ?? getenv('SEED_TOKEN') ?: null;
 
         if (!$expected || !$token || !hash_equals($expected, $token)) {
             return new JsonResponse(['ok' => false, 'error' => 'Forbidden'], 403);
