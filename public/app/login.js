@@ -19,13 +19,23 @@ form.addEventListener("submit", async (e) => {
             body: JSON.stringify(payload),
         });
 
-        const data = await res.json().catch(() => null);
+        const text = await res.text();
+        let data = null;
+        try { data = text ? JSON.parse(text) : null; } catch { }
 
-        if (!res.ok || !data?.success) {
+        if (!res.ok) {
             msg.textContent = data?.error || `Erreur login (HTTP ${res.status})`;
             msg.className = "msg error";
             return;
         }
+
+        // si pas de JSON, on considère que c’est OK (session créée)
+        if (data?.success === false) {
+            msg.textContent = data.error || "Erreur login";
+            msg.className = "msg error";
+            return;
+        }
+
 
         msg.textContent = `Connecté : ${data.user?.email}`;
         msg.className = "msg ok";
