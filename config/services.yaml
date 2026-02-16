@@ -25,3 +25,8 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+
+    # controllers are services
+    App\Controller\:
+        resource: '../src/Controller/'
+        tags: ['controller.service_arguments']
