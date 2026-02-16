@@ -2,25 +2,31 @@
 
 namespace App\Controller;
 
+
 use App\Entity\User;
+use App\Security\DebugTokenGuard;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
-class AdminSeedUserController
+final class AdminSeedUserController
 {
-    #[Route('/admin/_seed_user', methods: ['POST'])]
+    #[Route('/admin/_seed_user', name: 'app_adminseeduser_seed', methods: ['POST'])]
     public function seed(
         Request $request,
         EntityManagerInterface $em,
-        UserPasswordHasherInterface $hasher
+        UserPasswordHasherInterface $hasher,
+        DebugTokenGuard $guard
     ): JsonResponse {
-        // Token protection
-        $token = $request->headers->get('X-SEED-TOKEN');
-        if ($token !== $_ENV['SEED_TOKEN']) {
-            return new JsonResponse(['ok' => false, 'error' => 'Forbidden'], 403);
+        // Header token required
+        $guard->assertValid($request, 'SEED_TOKEN', 'X-SEED-TOKEN');
+        $required = ['ADMIN_EMAIL', 'ADMIN_PASSWORD', 'USER_EMAIL', 'USER_PASSWORD'];
+        $missing = array_values(array_filter($required, fn($k) => empty($_ENV[$k] ?? null)));
+
+        if ($missing) {
+            return new JsonResponse(['ok' => false, 'error' => 'Missing env vars', 'missing' => $missing,], 500);
         }
 
         $results = [];
