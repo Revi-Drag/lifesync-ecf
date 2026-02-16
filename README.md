@@ -1,22 +1,22 @@
 # LifeSync — Projet ECF Développeur Web & Web Mobile
 
-LifeSync est une application web de gestion de tâches partagées, développée dans le cadre de l’ECF.
-Elle permet à plusieurs utilisateurs de créer, suivre et réaliser des tâches afin d’améliorer
+LifeSync est une application web de gestion de tâches partagées, développée dans le cadre de l’ECF.  
+Elle permet à plusieurs utilisateurs authentifiés de créer, suivre et réaliser des tâches afin d’améliorer
 l’organisation quotidienne et de rendre visible la répartition des responsabilités.
 
 ---
 
-##  Fonctionnalités principales
+## Fonctionnalités principales
 
 - Authentification via API (`/api/login`)
 - Gestion complète des tâches (CRUD)
-- Statuts :
+- Statuts disponibles :
   - TODO
   - IN_PROGRESS
   - DONE
 - Historique automatique :
   - commencé par (`startedAt`, `startedBy`)
-  - fait par (`doneAt`, `doneBy`)
+  - terminé par (`doneAt`, `doneBy`)
 - Partage des tâches :
   - tous les utilisateurs voient toutes les tâches
   - tous peuvent changer le statut d’une tâche
@@ -26,100 +26,173 @@ l’organisation quotidienne et de rendre visible la répartition des responsabi
 
 ---
 
-##  Technologies utilisées
+## Technologies utilisées
 
 ### Backend
-- Symfony 7.4 (framework PHP moderne)
-- Doctrine ORM (base de données et entités)
-- MySQL (stockage des données)
-- API REST JSON (communication front/back)
+
+- Symfony 7 (framework PHP moderne)
+- Doctrine ORM (entités + accès base de données)
+- MySQL en local → PostgreSQL en production (Render)
+- API REST JSON
 
 ### Frontend
-- HTML / CSS moderne (interface simple)
+
+- HTML / CSS moderne
 - JavaScript Vanilla (Fetch API)
-- Interface accessible via `/public/app`
+- Interface disponible dans `public/app`
 
 ### Outils
+
 - Postman (tests API)
-- GitHub (versioning + gestion de projet)
+- GitHub (versioning)
+- GitHub Projects (gestion des étapes)
+- Render (déploiement Docker)
 
 ---
 
-##  Installation du projet
+## Liens du projet (ECF)
+
+- Dépôt GitHub :  
+  https://github.com/Revi-Drag/lifesync-ecf
+
+- Tableau de gestion de projet :  
+  https://github.com/users/Revi-Drag/projects/1/views/1
+
+- Déploiement Render :  
+  https://lifesync-ecf.onrender.com
+
+---
+
+## Compte administrateur (ECF)
+
+Identifiants demandés dans le dossier de rendu :
+
+- Email : **admin@lifesync.local**
+- Mot de passe : **Admin-123!**
+- Rôle : **ROLE_ADMIN**
+
+---
+
+## Installation du projet (local)
 
 ### 1. Cloner le dépôt
-
-
+```bash
 git clone https://github.com/Revi-Drag/lifesync-ecf.git
 cd lifesync-ecf
-2. Installer les dépendances
+
+```
+### 2. Installer les dépendances
+```bash
 composer install
-3. Configurer la base de données
-Créer un fichier .env.local :
 
+```
+### 3. Configurer la base de données (local)
+Créer un fichier `.env.local` à la racine du projet :
+```env 
 DATABASE_URL="mysql://root:password@127.0.0.1:3306/lifesync"
-Créer la base :
+```
 
+### 4. Créer la base et exécuter les migrations
+```bash
 php bin/console doctrine:database:create
-4. Exécuter les migrations
 php bin/console doctrine:migrations:migrate
-5. Charger les fixtures (utilisateurs + données)
+```
+
+### 5. Charger les fixtures (local uniquement)
+```bash
 php bin/console doctrine:fixtures:load
+```
+---
 
-- Comptes de test
-Administrateur
-Email : admin@lifesync.local
+## Comptes de test (local)
 
-Mot de passe : Admin123!
+### Administrateur
+Email : **admin@lifesync.local**
+Mot de passe : **Admin-123!**
+Rôle : **ROLE_ADMIN**
 
-Rôle : ROLE_ADMIN
+---
 
-Utilisateur standard
-Email : user@lifesync.local
-
-Mot de passe : User123!
-
-Rôle : ROLE_USER
-
-- Lancer le serveur Symfony
+## Lancer le serveur Symfony
+```bash
 symfony serve
-Application disponible sur :
+```
 
-API : http://127.0.0.1:8000/api
+## Application disponible sur :
 
-Front : http://127.0.0.1:8000/app/login.html
+- API : http://127.0.0.1:8000/api
 
-- Routes API principales
-Méthode	Route	Description
-POST	/api/login	Connexion
-GET	/api/me	Infos utilisateur connecté
-GET	/api/me/stats	Statistiques utilisateur
-GET	/api/tasks	Liste des tâches
-POST	/api/tasks	Créer une tâche
-PATCH	/api/tasks/{id}	Modifier statut ou contenu
-DELETE	/api/tasks/{id}	Supprimer une tâche
+- Front : http://127.0.0.1:8000/app/login.html
 
-- Sécurité
-Authentification via session Symfony (PHPSESSID)
+### Routes API principales
 
-Protection des routes API par firewall
+|Méthode	|  Route	       |      Description               | 
+|---------|----------------|--------------------------------|
+|POST	    |  /api/login	   |  Connexion                     |
+|GET 	    |   /api/me	     |  Infos utilisateur connecté    |
+|GET	    |  /api/me/stats |    Statistiques utilisateur    |
+|GET	    |  /api/tasks	   |    Liste des tâches            | 
+|POST	    |/api/tasks	     |  Créer une tâche               |
+|PATCH    |	/api/tasks/{id}|	   Modifier statut ou contenu |
+|DELETE  	|/api/tasks/{id} |   Supprimer une tâche          |
 
-Validation backend des champs (titre, durée, difficulté)
+---
 
-Contrôle des permissions :
+## Sécurité
+- Authentification via session Symfony (cookie PHPSESSID)
+- Cookies sécurisés :
+  - HttpOnly
+  - SameSite=Lax
 
-suppression limitée au créateur
+- Protection des routes API via firewall Symfony
+- Validation backend des champs :
+  - titre obligatoire
+  - difficulté entre 1 et 5
+  - statut contrôlé
 
-admin autorisé sur toutes les tâches
+- Contrôle des permissions :
+  - suppression limitée au créateur
+  - administrateur autorisé sur toutes les tâches
 
-- Gestion de projet
-Dépôt GitHub :
-https://github.com/Revi-Drag/lifesync-ecf
+---
 
-Tableau de gestion de projet :
-https://github.com/users/Revi-Drag/projects/1/views/1
+## Déploiement en production (Render)
+Le projet est déployé via Docker sur Render :
 
-- Auteur
+https://lifesync-ecf.onrender.com
+
+Base de données en production :
+
+ - PostgreSQL (Render)
+ - configurée via la variable DATABASE_URL
+
+## Création des comptes en production (Seed)
+En production, les comptes ne sont pas chargés par fixtures.
+Cette route est utilisée uniquement dans le cadre de l'ECF pour initialiser les comptes en production.
+Ils sont créés via une route de seed protégée :
+```bash
+POST /admin/_seed_user
+```
+Cette route nécessite un header obligatoire :
+```bash
+X-SEED-TOKEN: <token_secret>
+```
+Les identifiants sont définis via variables Render :
+ - ADMIN_EMAIL
+ - ADMIN_PASSWORD
+ - USER_EMAIL
+ - USER_PASSWORD
+ - SEED_TOKEN
+
+### Commande PowerShell utilisée :
+```powershell
+Invoke-WebRequest -UseBasicParsing `
+  -Uri "https://lifesync-ecf.onrender.com/admin/_seed_user" `
+  -Method Post `
+  -Headers @{ "X-SEED-TOKEN" = "VOTRE_TOKEN" }
+```
+
+
 Projet réalisé par Guillaume VALSEMEY
-ECF Développeur Web & Web Mobile
 
+ECF Développeur Web & Web Mobile
