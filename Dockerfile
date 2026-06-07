@@ -32,6 +32,9 @@ ENV APP_DEBUG=0
 # composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
+# allow composer to run as root (since we're running as root in the container)
+ENV COMPOSER_ALLOW_SUPERUSER=1
+
 # install vendors
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
